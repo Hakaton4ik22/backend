@@ -39,6 +39,9 @@ def login(user_form: UserLoginForm = Body(..., embed=True), database=Depends(con
 @router.post('/data', name='user:takeData')
 def login(user_form: UserDataUpdateForm = Body(..., embed=True), database=Depends(connect_db)):
 
+
+
+
     sql = '''select  o.napr, 
         o.nastranapr, 
         td.tnved_description, 
@@ -58,7 +61,7 @@ def login(user_form: UserDataUpdateForm = Body(..., embed=True), database=Depend
     --o.napr = 'ЭК'
     -- сортировка
     --order by o.operation_id, o.kol [столбец сортировки] desc [по убыванию] 
-    limit 10;'''
+    limit 100;'''
 
     
 
