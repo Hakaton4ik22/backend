@@ -37,7 +37,7 @@ def login(user_form: UserLoginForm = Body(..., embed=True), database=Depends(con
 
 
 @router.post('/data', name='user:takeData')
-def login(user_form: UserLoginForm = Body(..., embed=True), database=Depends(connect_db)):
+def login(user_form: UserDataUpdateForm = Body(..., embed=True), database=Depends(connect_db)):
 
     sql = '''select  o.napr, 
         o.nastranapr, 
