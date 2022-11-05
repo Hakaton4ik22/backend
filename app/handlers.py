@@ -11,6 +11,7 @@ from app.forms import UserDataUpdateForm, UserLoginForm
 
 router = APIRouter()
 
+#---------------------------------------------------------------------------------------
 
 def check_pass(login: str):
     
@@ -19,6 +20,7 @@ def check_pass(login: str):
     
     return pd.read_sql(sql, connect_db()).Password[0]
 
+#---------------------------------------------------------------------------------------
 
 
 @router.options('/login', name='CHECKRULS', )
@@ -27,6 +29,7 @@ def checkcorp( ):
     return {}
 
 
+#---------------------------------------------------------------------------------------
 
 
 @router.post('/login', name='user:login')
@@ -43,8 +46,10 @@ def login(user_form: UserLoginForm = Body(..., embed=True), database=Depends(con
     return {'auth_token': 'OK'}
 
 
+#---------------------------------------------------------------------------------------
+
 @router.post('/data', name='user:takeData')
-def login(user_form: UserDataUpdateForm = Body(..., embed=True), database=Depends(connect_db)):
+def take_data_second(user_form: UserDataUpdateForm = Body(..., embed=True), database=Depends(connect_db)):
 
 
 
@@ -74,3 +79,53 @@ def login(user_form: UserDataUpdateForm = Body(..., embed=True), database=Depend
 
 
     return pd.read_sql(sql, connect_db()).to_dict()
+
+
+#---------------------------------------------------------------------------------------
+
+@router.get('/data', name='user:Firstly_takeData')
+def take_data_first(database=Depends(connect_db)):
+
+    sql = '''select  o.napr, 
+        o.nastranapr, 
+        td.tnved_description, 
+        o.stoim, 
+        o.netto, 
+        o.kol, 
+        rd.region_description, 
+        rsd.region_s_description, 
+        o."month", 
+        o."year"  
+    from operations o 
+    join tnved_desc td on o.tnved = td.tnved_id 
+    join region_desc rd on o.region = rd.region_id 
+    join region_s_desc rsd on o.region_s = rsd.region_s_id 
+    --фильтры
+    --where 
+    --o.napr = 'ЭК'
+    -- сортировка
+    --order by o.operation_id, o.kol [столбец сортировки] desc [по убыванию] 
+    limit 100;'''
+
+    return pd.read_sql(sql, connect_db()).to_dict()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
