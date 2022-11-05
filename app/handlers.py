@@ -78,7 +78,7 @@ def take_data_second(user_form: UserDataUpdateForm = Body(..., embed=True), data
     
 
 
-    return pd.read_sql(sql, connect_db()).to_dict('index')
+    return list(pd.read_sql(sql, connect_db()).to_dict('index').values())
 
 
 #---------------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ def take_data_first(database=Depends(connect_db)):
     --order by o.operation_id, o.kol [столбец сортировки] desc [по убыванию] 
     limit 100;'''
 
-    return pd.read_sql(sql, connect_db()).to_dict('index')
+    return list(pd.read_sql(sql, connect_db()).to_dict('index').values())
 
 
 
