@@ -21,6 +21,13 @@ def check_pass(login: str):
 
 
 
+@router.options('/login', name='CHECKRULS', )
+def checkcorp( ):
+    print('chekup')
+    return {}
+
+
+
 
 @router.post('/login', name='user:login')
 def login(user_form: UserLoginForm = Body(..., embed=True), database=Depends(connect_db)):
