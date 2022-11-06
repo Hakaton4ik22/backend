@@ -110,11 +110,41 @@ def take_data_first(database=Depends(connect_db)):
     return list(pd.read_sql(sql, connect_db()).to_dict('index').values())
 
 
+#---------------------------------------------------------------------------------------
+
+@router.get('/tnved_description', name='filter:tnved_description')
+def take_tnved_desc(database=Depends(connect_db)):
+
+    sql = '''
+    select  
+
+        distinct td.tnved_description
+    
+    from operations o 
+        join tnved_desc td 
+        on o.tnved = td.tnved_id 
+
+    ;'''
+
+    return [list(i.values())[0] for i in pd.read_sql(sql, connect_db()).to_dict('index').values()]
 
 
+#---------------------------------------------------------------------------------------
 
+@router.get('/country', name='filter:country')
+def take_country(database=Depends(connect_db)):
 
+    sql = '''
+    
+    select  
 
+    distinct o.nastranapr
+    
+    from operations o
+
+    ;'''
+
+    return pd.read_sql(sql, connect_db()).to_string(header=False, index=False).replace('\n', '').strip().split()
 
 
 
