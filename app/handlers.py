@@ -193,7 +193,7 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
                     SAVE = result.columns.to_list()
 
                     result = pd.concat([result, first_second], axis=1)
-                    result.columns = [*SAVE, b + 'to' + a]
+                    result.columns = [*SAVE, b + 'To' + a]
         
         return result
 
