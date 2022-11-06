@@ -112,13 +112,13 @@ def take_data_first(database=Depends(connect_db)):
 
 #---------------------------------------------------------------------------------------
 
-@router.get('/tnved_description', name='filter:tnved_description')
-def take_tnved_desc(database=Depends(connect_db)):
+@router.get('/tnved_description', name='filter:tnved_category')
+def take_tnved_category(database=Depends(connect_db)):
 
     sql = '''
     select  
 
-        distinct td.tnved_description
+        distinct td.category
     
     from operations o 
         join tnved_desc td 
