@@ -16,8 +16,14 @@ class UserDataUpdateForm(BaseModel):
     stoim: str
 
 
-
-
 class UserLoginForm(BaseModel):
     email: str
     password: str
+
+
+
+class UserDelta(BaseModel):
+    countryForm: str
+    naprsForm: str
+    tnvedsForm: str
+    yearsForm: str
