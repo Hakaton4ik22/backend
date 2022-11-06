@@ -177,7 +177,7 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
             '''.format(user_form.tnvedsForm)
 
     
-    def calculate_delta(df, years=[2019, 2021], NAME=['stoim', 'netto', 'kol']):
+    def calculate_delta(df, years=[2020, 2021], NAME=['stoim']):#, 'netto', 'kol']):
     
         result = pd.DataFrame()
         
