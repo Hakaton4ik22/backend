@@ -166,15 +166,15 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
                 o."month", 
                 o."year"  
             from operations o 
-            join tnved_desc td on o.tnved = td.tnved_id
+            join tnved_desc td on (o.tnved = td.tnved_id
+                                   and td.category = '{}')
             --фильтры
             where 
-            o.napr = 'ИМ' 
-            --and td.tnved_description = 'ЩЕТКИ ПРОЧИЕ'
+            o.napr = 'ИМ'
             and o.region = 75
 
             ;
-            '''
+            '''.format(user_form.tnvedsForm)
 
     
     def calculate_delta(df, years=[2019, 2021], NAME=['stoim', 'netto', 'kol']):
@@ -187,24 +187,25 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
                     a = name + str(year) + str(month)
                     b = name + str(year + 1) + str(month)
 
+                    try:
+                        first_second = ((df[b] - df[a]) / df[a].replace(0.0, 1)).round(2) * 100
 
-                    first_second = ((df[b] - df[a]) / df[a].replace(0.0, 1)).round(2) * 100
+                        SAVE = result.columns.to_list()
 
-                    SAVE = result.columns.to_list()
-
-                    result = pd.concat([result, first_second], axis=1)
-                    result.columns = [*SAVE, b + 'To' + a]
+                        result = pd.concat([result, first_second], axis=1)
+                        result.columns = [*SAVE, b + 'To' + a]
+                    except:
+                        print('Ошибка')
         
         return result
 
 
 
     
+    df = pd.read_sql(sql, connect_db())
+    print(df.shape, user_form.tnvedsForm)
 
-
-    MOSCOW = pd.read_sql(sql, connect_db())\
-               .query('region == 75') \
-               .pivot_table(index=['napr', 'tnved'], 
+    MOSCOW = df.pivot_table(index=['napr', 'tnved'], 
                             columns=['year', 'month'], 
                             values=['stoim', 'netto', 'kol'], 
                             aggfunc='sum'
