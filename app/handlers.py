@@ -164,7 +164,7 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
 
     tnved_list = ", ".join(["\x27" + i + "\x27" for i in user_form.tnvedsForm])
 
-    if user_form.countryForm != 'string' and user_form.countryForm != 'Все страны':
+    if user_form.countryForm != 'string' or user_form.countryForm != 'Все_страны':
         napr_list = "and o.napr = '{}'".format(user_form.countryForm)
 
     else:
