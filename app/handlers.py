@@ -8,6 +8,7 @@ from starlette import status
 from app.models import connect_db# User#, Stream, AuthToken, StreamStatus
 from app.forms import UserDataUpdateForm, UserLoginForm, UserDelta
 
+import numpy as np
 
 router = APIRouter()
 
@@ -52,8 +53,6 @@ def login(user_form: UserLoginForm = Body(..., embed=True), database=Depends(con
 def take_data_second(user_form: UserDataUpdateForm = Body(..., embed=True), database=Depends(connect_db)):
 
 
-
-
     sql = '''select  o.napr, 
         o.nastranapr, 
         td.tnved_description, 
@@ -70,16 +69,13 @@ def take_data_second(user_form: UserDataUpdateForm = Body(..., embed=True), data
     join region_s_desc rsd on o.region_s = rsd.region_s_id 
     --фильтры
     --where 
-    --o.napr = 'ЭК'
+    --o.napr = 'ИМ'
     -- сортировка
     --order by o.operation_id, o.kol [столбец сортировки] desc [по убыванию] 
-    limit 100;'''
-
-    
+    limit 500;'''
 
 
     return list(pd.read_sql(sql, connect_db()).to_dict('index').values())
-
 
 #---------------------------------------------------------------------------------------
 
@@ -102,10 +98,10 @@ def take_data_first(database=Depends(connect_db)):
     join region_s_desc rsd on o.region_s = rsd.region_s_id 
     --фильтры
     --where 
-    --o.napr = 'ЭК'
+    --o.napr = 'ИМ'
     -- сортировка
     --order by o.operation_id, o.kol [столбец сортировки] desc [по убыванию] 
-    limit 100;'''
+    limit 500;'''
 
     return list(pd.read_sql(sql, connect_db()).to_dict('index').values())
 
@@ -144,7 +140,12 @@ def take_country(database=Depends(connect_db)):
 
     ;'''
 
-    return pd.read_sql(sql, connect_db()).to_string(header=False, index=False).replace('\n', '').strip().split()
+
+
+    # return pd.read_sql(sql, connect_db()).to_string(header=False, index=False).replace('\n', '').strip().split()
+
+    return pd.concat([pd.DataFrame(['Все_страны']), pd.read_sql(sql, connect_db()).nastranapr])\
+           .to_string(header=False, index=False).replace('\n', '').strip().split()
 
 
 
@@ -155,17 +156,23 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
 
 
     region_dict = {'РФ' : '', 
-                    'Московская область' : 'and o.region in (75)', 
-                    'СПБ' : 'and o.region = 75', 
-                    'РФ без Московской области' : 'and o.region != 75',
+                    'Московская область' : 'and o.region in (56)', 
+                    'СПБ' : 'and o.region = 24', 
+                    'РФ без Московской области' : 'and o.region not in (56, 75)',
                     'Москва': 'and o.region = 75'
                     }
 
     tnved_list = ", ".join(["\x27" + i + "\x27" for i in user_form.tnvedsForm])
 
+    if user_form.countryForm != 'string' and user_form.countryForm != 'Все страны':
+        napr_list = "and o.napr = '{}'".format(user_form.countryForm)
+
+    else:
+        napr_list = ''
+
 
     sql = '''
-          select  
+            select  
                 o.napr, 
                 o.nastranapr, 
                 td.tnved_description,
@@ -185,9 +192,14 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
             o.napr = 'ИМ'
             
             {} 
+            {}
 
             ;
-            '''.format(tnved_list, region_dict[user_form.regionForm])
+            '''.format(tnved_list, 
+                       region_dict[user_form.regionForm], 
+                       napr_list
+
+                       )
 
     def calculate_delta(df, years=[2020, 2021], NAME=['stoim']):#, 'netto', 'kol']):
     
@@ -213,8 +225,6 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
         return result
 
 
-
-    
     df = pd.read_sql(sql, connect_db())
     # print(df.shape, user_form.tnvedsForm)
     if df.shape[0] == 0:
@@ -244,17 +254,23 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
                             aggfunc='sum'
                             )\
                .reset_index()
+    tnved_column = MOSCOW.tnved.copy()
     COL = []
     for i in list(MOSCOW.columns):
         COL.append(str(i[0]) + str(i[1]) + str(i[2]))
     MOSCOW.columns = COL
 
     df = calculate_delta(MOSCOW)
+    df = pd.concat([tnved_column, df], axis=1)
+    
+    if user_form.resForm == 'Результат аналитики':
 
-    for col in df.columns:
-        df[col] = df[col].apply(lambda x: str(round(x, 2)))
+        df = df.sort_values(by=df.columns[1:].tolist(), ascending=False)
 
-    return list(df.head(100).to_dict('index').values())
+    for col in df.columns[1:]:
+        df[col] = df[col].apply(lambda x: str(round(x, 2)) + '%' if x is not None else x)
+
+    return list(df.head(500).to_dict('index').values())
 
 
 #-----------------------------------------------------------------------------------------
