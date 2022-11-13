@@ -25,5 +25,8 @@ class UserLoginForm(BaseModel):
 class UserDelta(BaseModel):
     countryForm: str
     naprsForm: str
-    tnvedsForm: str
+    resForm: str
+    tnvedsForm: list
     yearsForm: str
+    regionForm: str
+

@@ -153,6 +153,17 @@ def take_country(database=Depends(connect_db)):
 @router.post('/delta', name='user:takeDelta')
 def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(connect_db)):
 
+
+    region_dict = {'РФ' : '', 
+                    'Московская область' : 'and o.region in (75)', 
+                    'СПБ' : 'and o.region = 75', 
+                    'РФ без Московской области' : 'and o.region != 75',
+                    'Москва': 'and o.region = 75'
+                    }
+
+    tnved_list = ", ".join(["\x27" + i + "\x27" for i in user_form.tnvedsForm])
+
+
     sql = '''
           select  
                 o.napr, 
@@ -167,16 +178,17 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
                 o."year"  
             from operations o 
             join tnved_desc td on (o.tnved = td.tnved_id
-                                   and td.category = '{}')
+                                   and td.category in ({})
+                                   )
             --фильтры
             where 
             o.napr = 'ИМ'
-            and o.region = 75
+            
+            {} 
 
             ;
-            '''.format(user_form.tnvedsForm)
+            '''.format(tnved_list, region_dict[user_form.regionForm])
 
-    
     def calculate_delta(df, years=[2020, 2021], NAME=['stoim']):#, 'netto', 'kol']):
     
         result = pd.DataFrame()
@@ -195,15 +207,36 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
                         result = pd.concat([result, first_second], axis=1)
                         result.columns = [*SAVE, b + 'To' + a]
                     except:
-                        print('Ошибка')
-        
+                        print('Ошибка в формировании таблицы')
+                        # print(df.shape, df.columns.to_list())
+    
         return result
 
 
 
     
     df = pd.read_sql(sql, connect_db())
-    print(df.shape, user_form.tnvedsForm)
+    # print(df.shape, user_form.tnvedsForm)
+    if df.shape[0] == 0:
+
+        return [
+                  {
+                    "stoim20211Tostoim20201": "0",
+                    "stoim20212Tostoim20202": "0",
+                    "stoim20213Tostoim20203": "0",
+                    "stoim20214Tostoim20204": "0",
+                    "stoim20215Tostoim20205": "0",
+                    "stoim20216Tostoim20206": "0",
+                    "stoim20217Tostoim20207": "0",
+                    "stoim20218Tostoim20208": "0",
+                    "stoim20219Tostoim20209": "0",
+                    "stoim202110Tostoim202010": "0",
+                    "stoim202111Tostoim202011": "0",
+                    "stoim202112Tostoim202012": "0"
+                  }
+                ]
+
+
 
     MOSCOW = df.pivot_table(index=['napr', 'tnved'], 
                             columns=['year', 'month'], 
@@ -221,14 +254,10 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
     for col in df.columns:
         df[col] = df[col].apply(lambda x: str(round(x, 2)))
 
-    return list(df.head(50).to_dict('index').values())
+    return list(df.head(100).to_dict('index').values())
 
 
 #-----------------------------------------------------------------------------------------
-
-
-
-
 
 
 
