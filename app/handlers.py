@@ -164,8 +164,8 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
 
     tnved_list = ", ".join(["\x27" + i + "\x27" for i in user_form.tnvedsForm])
 
-    if user_form.countryForm != 'string' or user_form.countryForm != 'Все_страны':
-        napr_list = "and o.napr = '{}'".format(user_form.countryForm)
+    if user_form.countryForm != 'Все_страны':
+        napr_list = "and o.nastranapr = '{}'".format(user_form.countryForm)
 
     else:
         napr_list = ''
@@ -200,7 +200,7 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
                        napr_list
 
                        )
-
+    print(sql)
     def calculate_delta(df, years=[2020, 2021], NAME=['stoim']):#, 'netto', 'kol']):
     
         result = pd.DataFrame()
