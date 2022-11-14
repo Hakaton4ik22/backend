@@ -155,7 +155,8 @@ def take_country(database=Depends(connect_db)):
 def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(connect_db)):
 
 
-    region_dict = {'РФ' : '', 
+    region_dict =  {
+                    'РФ' : '', 
                     'Московская область' : 'and o.region in (56)', 
                     'СПБ' : 'and o.region = 24', 
                     'РФ без Московской области' : 'and o.region not in (56, 75)',
@@ -200,7 +201,7 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
                        napr_list
 
                        )
-    print(sql)
+    # print(sql)
     def calculate_delta(df, years=[2020, 2021], NAME=['stoim']):#, 'netto', 'kol']):
     
         result = pd.DataFrame()
@@ -231,18 +232,18 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
 
         return [
                   {
-                    "stoim20211Tostoim20201": "0",
-                    "stoim20212Tostoim20202": "0",
-                    "stoim20213Tostoim20203": "0",
-                    "stoim20214Tostoim20204": "0",
-                    "stoim20215Tostoim20205": "0",
-                    "stoim20216Tostoim20206": "0",
-                    "stoim20217Tostoim20207": "0",
-                    "stoim20218Tostoim20208": "0",
-                    "stoim20219Tostoim20209": "0",
-                    "stoim202110Tostoim202010": "0",
-                    "stoim202111Tostoim202011": "0",
-                    "stoim202112Tostoim202012": "0"
+                    "stoim20211Tostoim20201": "Нет данных",
+                    "stoim20212Tostoim20202": "Нет данных",
+                    "stoim20213Tostoim20203": "Нет данных",
+                    "stoim20214Tostoim20204": "Нет данных",
+                    "stoim20215Tostoim20205": "Нет данных",
+                    "stoim20216Tostoim20206": "Нет данных",
+                    "stoim20217Tostoim20207": "Нет данных",
+                    "stoim20218Tostoim20208": "Нет данных",
+                    "stoim20219Tostoim20209": "Нет данных",
+                    "stoim202110Tostoim202010": "Нет данных",
+                    "stoim202111Tostoim202011": "Нет данных",
+                    "stoim202112Tostoim202012": "Нет данных"
                   }
                 ]
 
@@ -254,7 +255,13 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
                             aggfunc='sum'
                             )\
                .reset_index()
-    tnved_column = MOSCOW.tnved.copy()
+    tnved_column = MOSCOW.loc[:, ['tnved']].copy()
+
+    tnved_column = tnved_column.merge(df.loc[:, ['tnved_description', 'tnved']].drop_duplicates(), 
+           on='tnved'
+           ).tnved_description
+
+
     COL = []
     for i in list(MOSCOW.columns):
         COL.append(str(i[0]) + str(i[1]) + str(i[2]))
@@ -268,7 +275,7 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
         df = df.sort_values(by=df.columns[1:].tolist(), ascending=False)
 
     for col in df.columns[1:]:
-        df[col] = df[col].apply(lambda x: str(round(x, 2)) + '%' if x is not None else x)
+        df[col] = df[col].apply(lambda x: str(round(x, 1)) + ' %' if x else str(x))
 
     return list(df.head(500).to_dict('index').values())
 
