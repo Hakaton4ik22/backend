@@ -262,6 +262,7 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
            ).tnved_description
 
 
+
     COL = []
     for i in list(MOSCOW.columns):
         COL.append(str(i[0]) + str(i[1]) + str(i[2]))
@@ -269,6 +270,7 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
 
     df = calculate_delta(MOSCOW)
     df = pd.concat([tnved_column, df], axis=1)
+    df.columns = ['tnved', *df.columns.to_list()[1:]]
     
     if user_form.resForm == 'Результат аналитики':
 
