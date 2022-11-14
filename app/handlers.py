@@ -202,7 +202,18 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
 
                        )
     # print(sql)
-    def calculate_delta(df, years=[2020, 2021], NAME=['stoim']):#, 'netto', 'kol']):
+
+    if user_form.yearsForm == 'Количество':
+
+        resNAME = 'kol'
+
+    elif user_form.yearsForm == 'Вес':
+        resNAME = 'netto'
+    else:
+        resNAME = 'stoim'
+
+
+    def calculate_delta(df, years=[2020, 2021], NAME=[resNAME]):
     
         result = pd.DataFrame()
         
@@ -219,15 +230,16 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
 
                         result = pd.concat([result, first_second], axis=1)
                         result.columns = [*SAVE, b + 'To' + a]
+                        result.columns = [i.replace(resNAME, 'stoim') for i in result.columns]
+
                     except:
                         print('Ошибка в формировании таблицы')
                         # print(df.shape, df.columns.to_list())
     
-        return result
-
+        return result.fillna(0)
 
     df = pd.read_sql(sql, connect_db())
-    # print(df.shape, user_form.tnvedsForm)
+
     if df.shape[0] == 0:
 
         return [
