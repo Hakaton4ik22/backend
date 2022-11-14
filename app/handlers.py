@@ -277,7 +277,7 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
         df = df.sort_values(by=df.columns[1:].tolist(), ascending=False)
 
     for col in df.columns[1:]:
-        df[col] = df[col].apply(lambda x: str(round(x, 1)) + ' %' if x else str(x))
+        df[col] = df[col].apply(lambda x: str(round(x, 1)) + '%' if x else str(x))
 
     return list(df.head(500).to_dict('index').values())
 
