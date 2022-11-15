@@ -296,12 +296,56 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
 
 #-----------------------------------------------------------------------------------------
 
+@router.get('/get_recomendation', name='user:recomendation')
+def get_recomendation(database=Depends(connect_db)):
+
+
+    sql = '''
+            select td.tnved_cat, o.napr, 
+                 sum(case when o."year" = 2019 then o.stoim end) as "2019",
+                 sum(case when o."year" = 2020 then o.stoim end) as "2020",
+                 sum(case when o."year" = 2021 then o.stoim end) as "2021"
+
+            from operations o 
+                 join tnved_desc td 
+                 on o.tnved = td.tnved_id
+
+            group by td.tnved_cat, 
+                     o.napr;
+
+            '''
 
 
 
+    def delta_year(df):
+
+        result = {}
+        for i, j in (df.columns[-1:2:-1].to_list(), df.columns[-2:1:-1].to_list()):
+            result[f'{i}vs{j}'] = ((df[i] - df[j]) / df[j] * 100).round(1)
+        
+        result = pd.DataFrame(result).iloc[:, -1::-1]
+        
+        result = pd.concat([df, result], axis=1)
+        
+        result = result.sort_values(by=[*result.columns.to_list()[-1:1:-1]], ascending=False)
+        
+        return result
 
 
+    piv = pd.read_sql(sql, connect_db())
 
+    result = pd.concat([delta_year(piv).query('napr == "ИМ"').head(50), 
+                        delta_year(piv).query('napr == "ЭК"').tail(50)])\
+                       .reset_index().drop('index', axis=1)
+
+    sql = '''select  distinct td.category, td.tnved_cat from operations o  join tnved_desc td  on o.tnved = td.tnved_id ;'''
+
+    x = pd.read_sql(sql, connect_db())
+
+    result = result.merge(x, on='tnved_cat').loc[:, ['tnved_cat', 'category', 'napr', '2019', '2020', '2021', '2020vs2019', '2021vs2020']]
+
+
+    return list(result.head(100).to_dict('index').values())
 
 
 
