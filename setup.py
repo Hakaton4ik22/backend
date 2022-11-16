@@ -13,7 +13,8 @@ setup(
         'psycopg2',
         'pytest==6.2.5',
         'requests', #==2.26.0',
-        'pandas'
+        'pandas',
+        'openpyxl'
     ],
     scripts=[
         'app/main.py'

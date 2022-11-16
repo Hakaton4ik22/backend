@@ -3,6 +3,10 @@ import pandas as pd
 from datetime import datetime
 
 from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi.responses import FileResponse
+
+from os import getcwd, listdir
+
 from starlette import status
 
 from app.models import connect_db# User#, Stream, AuthToken, StreamStatus
@@ -347,12 +351,20 @@ def get_recomendation(database=Depends(connect_db)):
     for i in result.columns:
         result[i] = result[i].apply(str)
 
+    result.to_excel("recomendation.xlsx", index=False)
 
     return list(result.head(100).to_dict('index').values())
 
+#-----------------------------------------------------------------------------------------
 
+@router.get('/download/{name_file}', name='user:file_of_recomendation')
+def get_file_rec(name_file: str):
 
+    #FileResponse(path=getcwd() + "/" + name_file, 
+                     #   media_type='application/octet-stream', filename=name_file)
+    print(listdir())
 
+    return FileResponse(path=getcwd() + "/" + name_file, media_type='application/octet-stream', filename=name_file)
 
 
 
