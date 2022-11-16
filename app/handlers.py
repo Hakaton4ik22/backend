@@ -295,6 +295,14 @@ def take_delta(user_form: UserDelta = Body(..., embed=True), database=Depends(co
     for col in df.columns[1:]:
         df[col] = df[col].apply(lambda x: str(round(x, 1)) + '%' if x else str(x))
 
+    if user_form.resForm == 'Результат аналитики':
+
+        df.head(500).to_excel("Результат аналитики.xlsx", index=False)
+
+    else:
+        df.head(500).to_excel("Динамика показателей.xlsx", index=False)
+
+
     return list(df.head(500).to_dict('index').values())
 
 
@@ -359,10 +367,6 @@ def get_recomendation(database=Depends(connect_db)):
 
 @router.get('/download/{name_file}', name='user:file_of_recomendation')
 def get_file_rec(name_file: str):
-
-    #FileResponse(path=getcwd() + "/" + name_file, 
-                     #   media_type='application/octet-stream', filename=name_file)
-    print(listdir())
 
     return FileResponse(path=getcwd() + "/" + name_file, media_type='application/octet-stream', filename=name_file)
 
