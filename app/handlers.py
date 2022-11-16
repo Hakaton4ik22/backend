@@ -344,6 +344,9 @@ def get_recomendation(database=Depends(connect_db)):
 
     result = result.merge(x, on='tnved_cat').loc[:, ['tnved_cat', 'category', 'napr', '2019', '2020', '2021', '2020vs2019', '2021vs2020']]
 
+    for i in result.columns:
+        result[i] = result[i].apply(str)
+
 
     return list(result.head(100).to_dict('index').values())
 
